@@ -28,7 +28,6 @@ interface ChessController {
     fun createNewRuleset(ruleset: ChessRuleset)
     fun activeRuleset(): StateFlow<ChessRuleset?>
     fun allRulesets(): StateFlow<List<ChessRuleset>>
-    fun setCustomTimes(baseMillis: Long, incrementMillis: Long)
 
     fun dispose()
 }
@@ -150,11 +149,6 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
 
     override fun appState(): StateFlow<ChessGameplayUiState> {
         return _appState.asStateFlow()
-    }
-
-    override fun setCustomTimes(baseMillis: Long, incrementMillis: Long) {
-        val newRuleset = ChessRuleset("Custom", baseMillis, incrementMillis)
-        setRuleset(newRuleset)
     }
 
     override fun dispose() {
