@@ -85,11 +85,7 @@ fun CreateRulesetDialog(
                         keyboardType = KeyboardType.Number
                     ),
                     onValueChange = { v ->
-                        if (v.isNotEmpty()) {
-                            incSeconds = v.toDigitsOrZero()
-                        } else {
-                            incSeconds = null
-                        }
+                        incSeconds = if (v.isNotEmpty()) v.toDigitsOrZero() else null
                     }, singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
 
