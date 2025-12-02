@@ -40,7 +40,7 @@ fun CreateRulesetDialog(
 
     var name by remember { mutableStateOf("") }
     var baseMinutes by remember { mutableIntStateOf(10) }
-    var incSeconds by remember { mutableIntStateOf(0) }
+    var incSeconds by remember { mutableStateOf<Int?>(0) }
 
     val context = LocalContext.current
 
@@ -80,12 +80,16 @@ fun CreateRulesetDialog(
                 OutlinedTextField(
                     textStyle = MaterialTheme.typography.bodyLarge,
                     label = { Text(stringResource(R.string.create_ruleset_dialog_time_increment_after_move_made)) },
-                    value = incSeconds.toString(),
+                    value = (incSeconds ?: "").toString(),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number
                     ),
                     onValueChange = { v ->
-                        incSeconds = v.toDigitsOrZero()
+                        if (v.isNotEmpty()) {
+                            incSeconds = v.toDigitsOrZero()
+                        } else {
+                            incSeconds = null
+                        }
                     }, singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
 
@@ -102,7 +106,7 @@ fun CreateRulesetDialog(
                         onApply(
                             name,
                             baseMinutes.minutesToMilliseconds(),
-                            incSeconds.secondsToMilliseconds()
+                            (incSeconds ?: 0).secondsToMilliseconds()
                         )
                         onDismiss()
                     } else {
