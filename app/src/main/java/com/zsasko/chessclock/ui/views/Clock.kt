@@ -23,14 +23,13 @@ fun Clock(
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                currentTime, style = MaterialTheme.typography.headlineLarge,
+                currentTime, style = MaterialTheme.typography.headlineLarge
             )
             Button(onStopMyStartOtherClicked, enabled = isPlayActive) {
                 Text(
                     stringResource(R.string.chess_gameplay_stop_my_start_other),
-                    style = MaterialTheme.typography.labelLarge,
-
-                    )
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
         }
     }
