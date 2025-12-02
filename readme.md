@@ -2,7 +2,7 @@
 
 Application that displays chess clock where user can select different rulesets and create its own ruleset.
 
-![](https://raw.githubusercontent.com/zsasko/android-mvi-sample/main/assets/combined_centered.png)
+![](https://raw.githubusercontent.com/zsasko/chess_clock/main/assets/combined_centered.png)
 
 
 # Features
