@@ -12,14 +12,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.zsasko.chessclock.R
+import com.zsasko.chessclock.model.state.ChessGameplayUiState
 
 @Composable
 fun Clock(
-    isPlayActive: Boolean,
+    appState: ChessGameplayUiState,
     currentTime: String,
     onStopMyStartOtherClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isPlayActive = appState is ChessGameplayUiState.Running
+
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
@@ -38,5 +41,5 @@ fun Clock(
 @Preview
 @Composable
 fun PreviewClock() {
-    Clock(false, "05:23", {}, Modifier)
+    Clock(ChessGameplayUiState.Running(), "05:23", {}, Modifier)
 }

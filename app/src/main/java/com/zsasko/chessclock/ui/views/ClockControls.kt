@@ -14,13 +14,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.zsasko.chessclock.R
 import com.zsasko.chessclock.model.ChessRuleset
+import com.zsasko.chessclock.model.state.ChessGameplayUiState
 import com.zsasko.chessclock.utils.DEFAULT_RULESETS
 import com.zsasko.chessclock.utils.TEST_TAG_BUTTON_RESET
 import com.zsasko.chessclock.utils.TEST_TAG_BUTTON_START_PAUSE
 
 @Composable
 fun ClockControls(
-    isPlayActive: Boolean,
+    appState: ChessGameplayUiState,
     selectedRuleset: ChessRuleset?,
     onStartClicked: () -> Unit,
     onPauseClicked: () -> Unit,
@@ -29,6 +30,9 @@ fun ClockControls(
     onCreateRulesetClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isPlayActive = appState is ChessGameplayUiState.Running
+    val isPlayPaused = appState is ChessGameplayUiState.Paused
+
     Column(modifier = modifier) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(onClick = {
@@ -47,8 +51,8 @@ fun ClockControls(
                 )
             }
             Button(
-                onClick = onResetClicked, enabled = isPlayActive,
-
+                onClick = onResetClicked,
+                enabled = isPlayActive,
                 modifier = Modifier.testTag(TEST_TAG_BUTTON_RESET)
             ) {
                 Text(
@@ -60,7 +64,7 @@ fun ClockControls(
 
         Button(
             onClick = onSelectRulesetClicked,
-            enabled = !isPlayActive
+            enabled = !isPlayActive && !isPlayPaused
         ) {
             Text(
                 stringResource(
@@ -72,7 +76,7 @@ fun ClockControls(
         }
         Button(
             onClick = onCreateRulesetClicked,
-            enabled = !isPlayActive
+            enabled = !isPlayActive && !isPlayPaused
         ) {
             Text(
                 stringResource(R.string.clock_controls_create_new_ruleset),
@@ -86,7 +90,7 @@ fun ClockControls(
 @Composable
 fun PreviewClockControls() {
     ClockControls(
-        true,
+        ChessGameplayUiState.Paused(),
         DEFAULT_RULESETS.first(),
         {},
         {},

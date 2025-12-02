@@ -49,8 +49,6 @@ fun ChessGameplayScreen(
     val allRulesets = chessViewModel.allRulesets.collectAsStateWithLifecycle()
     val appState = chessViewModel.appState.collectAsStateWithLifecycle()
 
-    val isPlayActive = appState.value is ChessGameplayUiState.Running
-
     val showSelectRuleset = remember { mutableStateOf(false) }
     val showCreateNewRuleset = remember { mutableStateOf(false) }
 
@@ -79,7 +77,7 @@ fun ChessGameplayScreen(
                         .background(Color.Yellow)
                 ) {
                     Clock(
-                        isPlayActive = isPlayActive,
+                        appState = appState.value,
                         firstPlayerTime.value.formatMillis(),
                         onStopMyStartOtherClicked = {
                             chessViewModel.stopMyStartOther()
@@ -96,7 +94,7 @@ fun ChessGameplayScreen(
                         .background(Color.Red)
                 ) {
                     Clock(
-                        isPlayActive = isPlayActive,
+                        appState = appState.value,
                         secondPlayerTime.value.formatMillis(),
                         onStopMyStartOtherClicked = {
                             chessViewModel.stopMyStartOther()
@@ -118,7 +116,7 @@ fun ChessGameplayScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ClockControls(
-                isPlayActive = isPlayActive,
+                appState = appState.value,
                 onResetClicked = {
                     chessViewModel.resetPlay()
                 }, onStartClicked = {
