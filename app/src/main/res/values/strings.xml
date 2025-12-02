@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Chess Clock</string>
+    <string name="create_ruleset_dialog_title">Create New Ruleset</string>
+    <string name="create_ruleset_dialog_ruleset_name">Name:</string>
+    <string name="create_ruleset_dialog_max_play_time">Maximum play time in minutes:</string>
+    <string name="create_ruleset_dialog_time_increment_after_move_made">Time increment after move is made in seconds:</string>
+    <string name="select_ruleset_dialog_title">Select Ruleset</string>
+    <string name="general_confirm">Confirm</string>
+    <string name="general_dismiss">Dismiss</string>
+    <string name="general_create">Create</string>
+    <string name="general_ok">OK</string>
+    <string name="general_message">Message</string>
+    <string name="create_ruleset_dialog_name_required_error">Name is required.</string>
+    <string name="create_ruleset_dialog_name_max_play_time_required">Maximum play time value is required.</string>
+    <string name="clock_controls_start">Start</string>
+    <string name="clock_controls_pause">Pause</string>
+    <string name="clock_controls_reset">Reset</string>
+    <string name="clock_controls_ruleset_format">Ruleset: %1$s</string>
+    <string name="clock_controls_create_new_ruleset">Create New Ruleset</string>
+    <string name="chess_gameplay_winner_is">Winner is %1$s</string>
+</resources>
