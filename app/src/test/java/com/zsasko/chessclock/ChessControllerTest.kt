@@ -56,7 +56,7 @@ class ChessControllerImplTest {
     fun `resetPlay pauses and resets times and state`() = runTest {
         val ruleset = ChessRuleset("Test", 5000L, 500L)
         controller.setRuleset(ruleset)
-        controller.startPlay(Players.LEFT_YELLOW)
+        controller.startPlay(Players.FIRST)
         advanceTimeBy(2000L)
 
         controller.resetPlay()
@@ -71,13 +71,13 @@ class ChessControllerImplTest {
         val ruleset = ChessRuleset("Test", 100L, 0L)
         controller.setRuleset(ruleset)
 
-        controller.startPlay(Players.LEFT_YELLOW)
+        controller.startPlay(Players.FIRST)
         advanceTimeBy(200L) // advance past max time
         controller.calculateIfGameIsOver()
 
         val state = controller.appState().value
         assertTrue(state is ChessGameplayUiState.Finished)
-        assertEquals(Players.RIGHT_RED, (state as ChessGameplayUiState.Finished).winner)
+        assertEquals(Players.SECOND, (state as ChessGameplayUiState.Finished).winner)
     }
 
 }

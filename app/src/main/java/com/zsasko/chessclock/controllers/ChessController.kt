@@ -78,7 +78,7 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
         withContext(dispatcher) {
             ticker = launch {
                 while (_appState.value is ChessGameplayUiState.Running) {
-                    if (_currentPlayer.value == Players.LEFT_YELLOW) {
+                    if (_currentPlayer.value == Players.FIRST) {
                         _firstPlayerTimeInSec.value -= TICK_INTERVAL_MS
                     } else {
                         _secondPlayerTimeInSec.value -= TICK_INTERVAL_MS
@@ -93,7 +93,7 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
     override fun stopMyStartOther() {
         if (_appState.value !is ChessGameplayUiState.Running) return
         val opponent =
-            if (_currentPlayer.value == Players.LEFT_YELLOW) Players.RIGHT_RED else Players.LEFT_YELLOW
+            if (_currentPlayer.value == Players.FIRST) Players.SECOND else Players.FIRST
         _currentPlayer.value = opponent
         applyIncrement()
     }
@@ -101,7 +101,7 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
     fun applyIncrement() {
         val increment = _currentRuleset.value?.timeIncrementAfterMoveIsMadeMs ?: 0
         if (increment <= 0) return
-        if (_currentPlayer.value == Players.RIGHT_RED) {
+        if (_currentPlayer.value == Players.SECOND) {
             _firstPlayerTimeInSec.value += increment
         } else {
             _secondPlayerTimeInSec.value += increment
@@ -158,11 +158,11 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
     fun calculateIfGameIsOver() {
         if (_firstPlayerTimeInSec.value <= 0) {
             resetPlay()
-            _appState.value = ChessGameplayUiState.Finished(Players.RIGHT_RED)
+            _appState.value = ChessGameplayUiState.Finished(Players.SECOND)
         }
         if (_secondPlayerTimeInSec.value <= 0) {
             resetPlay()
-            _appState.value = ChessGameplayUiState.Finished(Players.LEFT_YELLOW)
+            _appState.value = ChessGameplayUiState.Finished(Players.FIRST)
         }
     }
 

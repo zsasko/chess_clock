@@ -19,7 +19,7 @@ class ChessViewModel @Inject constructor(private val chessController: ChessContr
     val allRulesets = chessController.allRulesets()
     val appState = chessController.appState()
 
-    fun startPlay(currentPlayer: Players = Players.LEFT_YELLOW) {
+    fun startPlay(currentPlayer: Players = Players.FIRST) {
         viewModelScope.launch {
             chessController.startPlay(currentPlayer)
         }
