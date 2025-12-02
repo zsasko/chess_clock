@@ -31,3 +31,6 @@ val DEFAULT_RULESETS = listOf(
 )
 
 const val TICK_INTERVAL_MS = 100L
+
+const val TEST_TAG_BUTTON_START_PAUSE = "Button_Start_Pause"
+const val TEST_TAG_BUTTON_RESET = "Button_Reset"

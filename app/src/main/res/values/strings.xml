@@ -18,4 +18,5 @@
     <string name="clock_controls_ruleset_format">Ruleset: %1$s</string>
     <string name="clock_controls_create_new_ruleset">Create New Ruleset</string>
     <string name="chess_gameplay_winner_is">Winner is %1$s</string>
+    <string name="chess_gameplay_stop_my_start_other">Stop My - Start Other</string>
 </resources>

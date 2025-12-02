@@ -83,7 +83,8 @@ fun ChessGameplayScreen(
                         firstPlayerTime.value.formatMillis(),
                         onStopMyStartOtherClicked = {
                             chessViewModel.stopMyStartOther()
-                        })
+                        }
+                    )
                 }
             }
             // Player 2
@@ -99,7 +100,8 @@ fun ChessGameplayScreen(
                         secondPlayerTime.value.formatMillis(),
                         onStopMyStartOtherClicked = {
                             chessViewModel.stopMyStartOther()
-                        })
+                        }
+                    )
                 }
             }
         }
