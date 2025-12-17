@@ -35,7 +35,7 @@ interface ChessState {
     fun dispose()
 }
 
-interface ChessController: ChessState, ChessGameplay, ChessRulesets
+interface ChessController : ChessState, ChessGameplay, ChessRulesets
 
 class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController {
 
@@ -66,8 +66,10 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
     private fun resetClock(maxTime: Long) {
         _appState.update { state ->
             state.withData {
-                it.copy(firstPlayerDisplayTime = maxTime,
-                    secondPlayerDisplayTime = maxTime)
+                it.copy(
+                    firstPlayerDisplayTime = maxTime,
+                    secondPlayerDisplayTime = maxTime
+                )
             }
         }
     }
@@ -92,14 +94,16 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
             ticker = launch {
                 while (_appState.value is ChessGameplayUiState.Running) {
                     if (_appState.value.data.selectedPlayer == Players.FIRST) {
-                        val newValue = _appState.value.data.firstPlayerDisplayTime - TICK_INTERVAL_MS
+                        val newValue =
+                            _appState.value.data.firstPlayerDisplayTime - TICK_INTERVAL_MS
                         _appState.update { state ->
                             state.withData {
                                 it.copy(firstPlayerDisplayTime = newValue)
                             }
                         }
                     } else {
-                        val newValue = _appState.value.data.secondPlayerDisplayTime - TICK_INTERVAL_MS
+                        val newValue =
+                            _appState.value.data.secondPlayerDisplayTime - TICK_INTERVAL_MS
                         _appState.update { state ->
                             state.withData {
                                 it.copy(secondPlayerDisplayTime = newValue)
@@ -177,7 +181,7 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
         stopPlay()
     }
 
-     fun calculateIfGameIsOver() {
+    fun calculateIfGameIsOver() {
         if (_appState.value.data.firstPlayerDisplayTime <= 0) {
             resetPlay()
             _appState.update {

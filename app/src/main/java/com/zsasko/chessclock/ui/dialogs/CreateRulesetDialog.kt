@@ -26,8 +26,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.zsasko.chessclock.R
-import com.zsasko.chessclock.utils.minutesToMilliseconds
-import com.zsasko.chessclock.utils.secondsToMilliseconds
 import com.zsasko.chessclock.utils.toDigitsOrZero
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -140,6 +138,14 @@ private fun isInputValid(name: String, baseMinutes: Long): Pair<Boolean, Int> {
         return Pair(false, R.string.create_ruleset_dialog_name_max_play_time_required)
     }
     return Pair(true, -1)
+}
+
+fun Int.minutesToMilliseconds(): Long {
+    return this * 60_000L
+}
+
+fun Int.secondsToMilliseconds(): Long {
+    return this * 1_000L
 }
 
 @Composable

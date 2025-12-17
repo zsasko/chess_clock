@@ -38,9 +38,8 @@ sealed interface ChessGameplayUiState {
 /**
  * Sets the [GameplayData] to all [ChessGameplayUiState] states.
  */
-fun ChessGameplayUiState.withData(transform: (GameplayData) -> GameplayData ): ChessGameplayUiState
-{
-    return when(this) {
+fun ChessGameplayUiState.withData(transform: (GameplayData) -> GameplayData): ChessGameplayUiState {
+    return when (this) {
         is ChessGameplayUiState.Running -> copy(data = transform(data))
         is ChessGameplayUiState.Paused -> copy(data = transform(data))
         is ChessGameplayUiState.Initialized -> copy(data = transform(data))

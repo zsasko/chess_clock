@@ -15,7 +15,7 @@ import com.zsasko.chessclock.R
 import com.zsasko.chessclock.model.Players
 import com.zsasko.chessclock.model.state.ChessGameplayUiState
 import com.zsasko.chessclock.model.state.GameplayData
-import com.zsasko.chessclock.utils.formatMillis
+import java.util.Locale
 
 @Composable
 fun Clock(
@@ -24,8 +24,10 @@ fun Clock(
     onStopMyStartOtherClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isPlayActive = appState is ChessGameplayUiState.Running && appState.data.selectedPlayer == clockForPlayer
-    val currentTime = if (clockForPlayer == Players.FIRST) appState.data.firstPlayerDisplayTime.formatMillis() else  appState.data.secondPlayerDisplayTime.formatMillis()
+    val isPlayActive =
+        appState is ChessGameplayUiState.Running && appState.data.selectedPlayer == clockForPlayer
+    val currentTime =
+        if (clockForPlayer == Players.FIRST) appState.data.firstPlayerDisplayTime.formatMillis() else appState.data.secondPlayerDisplayTime.formatMillis()
 
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -40,6 +42,16 @@ fun Clock(
             }
         }
     }
+}
+
+/**
+ * Formats the value in milliseconds into minutes and seconds.
+ */
+fun Long.formatMillis(): String {
+    val totalSeconds = (this / 1000).toInt()
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
 }
 
 @Preview

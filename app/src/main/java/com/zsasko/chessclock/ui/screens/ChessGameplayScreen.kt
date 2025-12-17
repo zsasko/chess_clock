@@ -36,7 +36,6 @@ import com.zsasko.chessclock.ui.dialogs.SelectRulesetDialog
 import com.zsasko.chessclock.ui.theme.ChessClockTheme
 import com.zsasko.chessclock.ui.views.Clock
 import com.zsasko.chessclock.ui.views.ClockControls
-import com.zsasko.chessclock.utils.formatMillis
 import com.zsasko.chessclock.viewmodel.ChessViewModel
 
 @Composable
