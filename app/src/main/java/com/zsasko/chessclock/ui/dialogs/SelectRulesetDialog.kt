@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.zsasko.chessclock.R
 import com.zsasko.chessclock.model.ChessRuleset
 import com.zsasko.chessclock.viewmodel.ChessViewModel
+import androidx.compose.runtime.collectAsState
 
 @Composable
 fun SelectRulesetDialog(
@@ -36,7 +37,7 @@ fun SelectRulesetDialog(
     chessViewModel: ChessViewModel = hiltViewModel(),
 ) {
     val allRulesets = chessViewModel.allRulesets.collectAsStateWithLifecycle()
-    val currentRuleset = chessViewModel.appState.value.data.selectedRuleset
+    val currentRuleset = chessViewModel.appState.collectAsState().value.data.selectedRuleset
     var selectedRuleset by remember { mutableStateOf(currentRuleset) }
 
     val isDropDownExpanded = remember {
