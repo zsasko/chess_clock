@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,8 +42,6 @@ import com.zsasko.chessclock.ui.theme.ChessClockTheme
 import com.zsasko.chessclock.ui.views.Clock
 import com.zsasko.chessclock.ui.views.ClockControls
 import com.zsasko.chessclock.viewmodel.ChessViewModel
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -125,25 +122,19 @@ fun GameScreen(
 ) {
     val appState = chessViewModel.appState.collectAsStateWithLifecycle()
 
-    val selectedPlayer by chessViewModel.appState
-        .map { it.data.selectedPlayer }
-        .distinctUntilChanged()
+    val selectedPlayer = chessViewModel.selectedPlayer
         .collectAsStateWithLifecycle(initialValue = null)
 
-    val secondPlayerTime by chessViewModel.appState
-        .map { it.data.secondPlayerDisplayTime }
-        .distinctUntilChanged()
+    val secondPlayerTime = chessViewModel.secondPlayerTime
         .collectAsStateWithLifecycle(initialValue = 0)
 
-    val firstPlayerTime by chessViewModel.appState
-        .map { it.data.firstPlayerDisplayTime }
-        .distinctUntilChanged()
+    val firstPlayerTime = chessViewModel.firstPlayerTime
         .collectAsStateWithLifecycle(initialValue = 0)
 
     val isPlayer1Active =
-        appState.value is ChessGameplayUiState.Running && selectedPlayer == Players.FIRST
+        appState.value is ChessGameplayUiState.Running && selectedPlayer.value == Players.FIRST
     val isPlayer2Active =
-        appState.value is ChessGameplayUiState.Running && selectedPlayer == Players.SECOND
+        appState.value is ChessGameplayUiState.Running && selectedPlayer.value == Players.SECOND
 
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -171,7 +162,7 @@ fun GameScreen(
                 ) {
                     Clock(
                         isPlayButtonActive = isPlayer1Active,
-                        playerTime = firstPlayerTime,
+                        playerTime = firstPlayerTime.value,
                         onStopMyStartOtherClicked = {
                             chessViewModel.stopMyStartOther()
                         }
@@ -188,7 +179,7 @@ fun GameScreen(
                 ) {
                     Clock(
                         isPlayButtonActive = isPlayer2Active,
-                        playerTime = secondPlayerTime,
+                        playerTime = secondPlayerTime.value,
                         onStopMyStartOtherClicked = {
                             chessViewModel.stopMyStartOther()
                         }

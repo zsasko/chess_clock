@@ -6,6 +6,8 @@ import com.zsasko.chessclock.controllers.ChessController
 import com.zsasko.chessclock.model.ChessRuleset
 import com.zsasko.chessclock.model.Players
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -15,6 +17,18 @@ class ChessViewModel @Inject constructor(private val chessController: ChessContr
 
     val allRulesets = chessController.allRulesets()
     val appState = chessController.appState()
+
+    val selectedPlayer = appState
+        .map { it.data.selectedPlayer }
+        .distinctUntilChanged()
+
+    val secondPlayerTime = appState
+        .map { it.data.secondPlayerDisplayTime }
+        .distinctUntilChanged()
+
+    val firstPlayerTime = appState
+        .map { it.data.firstPlayerDisplayTime }
+        .distinctUntilChanged()
 
     fun startPlay(currentPlayer: Players = Players.FIRST) {
         viewModelScope.launch {
