@@ -17,7 +17,7 @@ import kotlinx.coroutines.withContext
 interface ChessController {
     fun appState(): StateFlow<ChessGameplayUiState>
     suspend fun startPlay(currentPlayer: Players)
-    fun stopMyStartOther()
+    fun stopMyStartOther(player: Players)
     fun stopPlay()
     fun pausePlay()
     fun resetPlay()
@@ -34,14 +34,14 @@ interface ChessController {
 
 class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController {
     private val _currentPlayer = MutableStateFlow<Players?>(null)
-    private var _firstPlayerTimeInSec = MutableStateFlow<Long>(0)
-    private var _secondPlayerTimeInSec = MutableStateFlow<Long>(0)
+    private val _firstPlayerTimeInSec = MutableStateFlow<Long>(0)
+    private val _secondPlayerTimeInSec = MutableStateFlow<Long>(0)
 
-    private var _rulesets = MutableStateFlow(DEFAULT_RULESETS)
-    private var _currentRuleset = MutableStateFlow<ChessRuleset?>(null)
+    private val _rulesets = MutableStateFlow(DEFAULT_RULESETS)
+    private val _currentRuleset = MutableStateFlow<ChessRuleset?>(null)
 
-    private var _appState =
-        MutableStateFlow<ChessGameplayUiState>(ChessGameplayUiState.Initialized())
+    private val _appState =
+        MutableStateFlow<ChessGameplayUiState>(ChessGameplayUiState.Initialized)
 
     private var ticker: Job? = null
 
@@ -70,7 +70,7 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
         if (_currentPlayer.value == null) {
             _currentPlayer.value = currentPlayer
         }
-        _appState.value = ChessGameplayUiState.Running()
+        _appState.value = ChessGameplayUiState.Running
         startTicker()
     }
 
@@ -90,8 +90,9 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
         }
     }
 
-    override fun stopMyStartOther() {
+    override fun stopMyStartOther(playerButtonClicked: Players) {
         if (_appState.value !is ChessGameplayUiState.Running) return
+        if (playerButtonClicked != _currentPlayer.value) return
         val opponent =
             if (_currentPlayer.value == Players.FIRST) Players.SECOND else Players.FIRST
         _currentPlayer.value = opponent
@@ -110,14 +111,14 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
 
     override fun stopPlay() {
         ticker?.cancel()
-        _appState.value = ChessGameplayUiState.Stopped()
+        _appState.value = ChessGameplayUiState.Stopped
         _currentRuleset.value?.let {
             resetClock(it.maxPlayTimePerPlayerMs)
         }
     }
 
     override fun pausePlay() {
-        _appState.value = ChessGameplayUiState.Paused()
+        _appState.value = ChessGameplayUiState.Paused
         ticker?.cancel()
     }
 
@@ -128,7 +129,7 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
         _firstPlayerTimeInSec.value = maxTime
         _secondPlayerTimeInSec.value = maxTime
         _currentPlayer.value = null
-        _appState.value = ChessGameplayUiState.Initialized()
+        _appState.value = ChessGameplayUiState.Initialized
     }
 
     override fun firstPlayerDisplayTime(): StateFlow<Long> {

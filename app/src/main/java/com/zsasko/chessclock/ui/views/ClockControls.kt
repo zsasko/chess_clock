@@ -90,7 +90,7 @@ fun ClockControls(
 @Composable
 fun PreviewClockControls() {
     ClockControls(
-        ChessGameplayUiState.Paused(),
+        ChessGameplayUiState.Paused,
         DEFAULT_RULESETS.first(),
         {},
         {},

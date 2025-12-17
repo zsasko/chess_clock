@@ -41,5 +41,5 @@ fun Clock(
 @Preview
 @Composable
 fun PreviewClock() {
-    Clock(ChessGameplayUiState.Running(), "05:23", {}, Modifier)
+    Clock(ChessGameplayUiState.Running, "05:23", {}, Modifier)
 }

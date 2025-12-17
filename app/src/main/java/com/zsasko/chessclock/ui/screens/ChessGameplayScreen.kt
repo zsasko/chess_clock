@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.zsasko.chessclock.R
+import com.zsasko.chessclock.model.Players
 import com.zsasko.chessclock.model.state.ChessGameplayUiState
 import com.zsasko.chessclock.ui.dialogs.CreateRulesetDialog
 import com.zsasko.chessclock.ui.dialogs.GenericTextDialog
@@ -80,7 +81,7 @@ fun ChessGameplayScreen(
                         appState = appState.value,
                         firstPlayerTime.value.formatMillis(),
                         onStopMyStartOtherClicked = {
-                            chessViewModel.stopMyStartOther()
+                            chessViewModel.stopMyStartOther(Players.FIRST)
                         }
                     )
                 }
@@ -97,7 +98,7 @@ fun ChessGameplayScreen(
                         appState = appState.value,
                         secondPlayerTime.value.formatMillis(),
                         onStopMyStartOtherClicked = {
-                            chessViewModel.stopMyStartOther()
+                            chessViewModel.stopMyStartOther(Players.SECOND)
                         }
                     )
                 }

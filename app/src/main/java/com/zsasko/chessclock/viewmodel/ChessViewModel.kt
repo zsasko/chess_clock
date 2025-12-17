@@ -25,7 +25,7 @@ class ChessViewModel @Inject constructor(private val chessController: ChessContr
         }
     }
 
-    fun stopMyStartOther() = chessController.stopMyStartOther()
+    fun stopMyStartOther(players: Players) = chessController.stopMyStartOther(players)
 
     fun resetPlay() = chessController.resetPlay()
 
