@@ -1,6 +1,5 @@
 package com.zsasko.chessclock.ui.dialogs
 
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -15,29 +14,12 @@ fun GenericTextDialog(
     title: String,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
-        title = {
-            Text(text = title, style = MaterialTheme.typography.headlineSmall)
-        },
-        text = {
+    DialogWrapperView(
+        title = title,
+        content = {
             Text(text = text, style = MaterialTheme.typography.bodyLarge)
         },
-        onDismissRequest = {
-            onDismiss()
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onDismiss()
-                }
-            ) {
-                Text(
-                    stringResource(R.string.general_ok),
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
-        },
-        dismissButton = {
+        leftButton = {
             TextButton(
                 onClick = {
                     onDismiss()
@@ -45,6 +27,18 @@ fun GenericTextDialog(
             ) {
                 Text(
                     stringResource(R.string.general_dismiss),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        },
+        rightButton = {
+            TextButton(
+                onClick = {
+                    onDismiss()
+                }
+            ) {
+                Text(
+                    stringResource(R.string.general_ok),
                     style = MaterialTheme.typography.labelLarge
                 )
             }

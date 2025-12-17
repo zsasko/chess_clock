@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -22,39 +19,40 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.zsasko.chessclock.R
 import com.zsasko.chessclock.model.ChessRuleset
-import com.zsasko.chessclock.utils.DEFAULT_RULESETS
+import com.zsasko.chessclock.viewmodel.ChessViewModel
 
 @Composable
 fun SelectRulesetDialog(
-    initial: ChessRuleset?,
-    options: List<ChessRuleset> = DEFAULT_RULESETS,
     onDismiss: () -> Unit,
-    onItemSelected: (ChessRuleset) -> Unit
+    onItemSelected: (ChessRuleset) -> Unit,
+    chessViewModel: ChessViewModel = hiltViewModel(),
 ) {
+    val allRulesets = chessViewModel.allRulesets.collectAsStateWithLifecycle()
+    val currentRuleset = chessViewModel.appState.value.data.selectedRuleset
+    var selectedRuleset by remember { mutableStateOf(currentRuleset) }
+
     val isDropDownExpanded = remember {
         mutableStateOf(false)
     }
-    var selectedRuleset by remember { mutableStateOf(initial) }
-    AlertDialog(
-        title = {
-            Text(
-                text = stringResource(R.string.select_ruleset_dialog_title),
-                style = MaterialTheme.typography.headlineSmall
-            )
-        },
-        text = {
+    DialogWrapperView(
+        title = stringResource(R.string.select_ruleset_dialog_title),
+        content = {
             Box {
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable {
-                        isDropDownExpanded.value = true
-                    }
+                    modifier = Modifier
+                        .clickable {
+                            isDropDownExpanded.value = true
+                        },
                 ) {
                     Text(
                         text = selectedRuleset?.name ?: "",
@@ -65,7 +63,7 @@ fun SelectRulesetDialog(
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Icon(
-                        Icons.Default.ArrowDropDown,
+                        painterResource(R.drawable.ic_drop_down),
                         contentDescription = "Dropdown",
                         modifier = Modifier
                     )
@@ -75,7 +73,7 @@ fun SelectRulesetDialog(
                     onDismissRequest = {
                         isDropDownExpanded.value = false
                     }) {
-                    options.forEach { option ->
+                    allRulesets.value.forEach { option ->
                         DropdownMenuItem(
                             text = {
                                 Text(option.name, style = MaterialTheme.typography.bodyMedium)
@@ -88,25 +86,7 @@ fun SelectRulesetDialog(
                 }
             }
         },
-        onDismissRequest = {
-            onDismiss()
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    selectedRuleset?.let {
-                        onItemSelected(it)
-                    }
-                    onDismiss()
-                }
-            ) {
-                Text(
-                    stringResource(R.string.general_confirm),
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
-        },
-        dismissButton = {
+        leftButton = {
             TextButton(
                 onClick = {
                     onDismiss()
@@ -117,6 +97,21 @@ fun SelectRulesetDialog(
                     style = MaterialTheme.typography.labelLarge
                 )
             }
+        },
+        rightButton = {
+            TextButton(
+                onClick = {
+                    selectedRuleset?.let {
+                        chessViewModel.setRuleset(it)
+                        onItemSelected(it)
+                    }
+                }
+            ) {
+                Text(
+                    stringResource(R.string.general_confirm),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
         }
     )
 }
@@ -124,5 +119,5 @@ fun SelectRulesetDialog(
 @Preview
 @Composable
 fun PreviewDialog() {
-    SelectRulesetDialog(DEFAULT_RULESETS.first(), DEFAULT_RULESETS, {}, {})
+    SelectRulesetDialog({}, {})
 }

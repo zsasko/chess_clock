@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +26,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.scene.DialogSceneStrategy
+import androidx.navigation3.scene.DialogSceneStrategy.Companion.dialog
+import androidx.navigation3.ui.NavDisplay
 import com.zsasko.chessclock.R
 import com.zsasko.chessclock.model.Players
 import com.zsasko.chessclock.model.state.ChessGameplayUiState
@@ -37,17 +42,85 @@ import com.zsasko.chessclock.ui.theme.ChessClockTheme
 import com.zsasko.chessclock.ui.views.Clock
 import com.zsasko.chessclock.ui.views.ClockControls
 import com.zsasko.chessclock.viewmodel.ChessViewModel
+import kotlinx.serialization.Serializable
+
+@Serializable
+data object GameScreen : NavKey
+
+@Serializable
+data object AddNewRulesetScreen : NavKey
+
+@Serializable
+data object SelectRulesetScreen : NavKey
+
+@Serializable
+data class DisplayGenericTextDialog(val title: String, val text: String) : NavKey
 
 @Composable
 fun ChessGameplayScreen(
     modifier: Modifier = Modifier,
-    chessViewModel: ChessViewModel = hiltViewModel()
 ) {
-    val allRulesets = chessViewModel.allRulesets.collectAsStateWithLifecycle()
-    val appState = chessViewModel.appState.collectAsStateWithLifecycle()
+    val backStack = rememberNavBackStack(GameScreen)
+    val dialogStrategy = remember { DialogSceneStrategy<NavKey>() }
 
-    val showSelectRuleset = remember { mutableStateOf(false) }
-    val showCreateNewRuleset = remember { mutableStateOf(false) }
+    NavDisplay(
+        modifier = modifier,
+        backStack = backStack,
+        sceneStrategy = dialogStrategy,
+        onBack = { backStack.removeLastOrNull() },
+        entryProvider = entryProvider {
+            entry<GameScreen> {
+                GameScreen(
+                    onCreateNewRuleButtonClicked = {
+                        backStack.add(AddNewRulesetScreen)
+                    },
+                    onSelectRuleButtonClicked = {
+                        backStack.add(SelectRulesetScreen)
+                    },
+                    onShowGenericDialog = { title, text ->
+                        backStack.add(DisplayGenericTextDialog(title, text))
+                    }
+                )
+            }
+            entry<SelectRulesetScreen>(
+                metadata = dialog()
+            ) {
+                SelectRulesetDialog({
+                    backStack.removeLastOrNull()
+                }, { i ->
+                    backStack.removeLastOrNull()
+                })
+            }
+            entry<AddNewRulesetScreen>(
+                metadata = dialog()
+            ) {
+                CreateRulesetDialog({
+                    backStack.removeLastOrNull()
+                }, { name, baseMs, incrementMs ->
+                    backStack.removeLastOrNull()
+                })
+            }
+            entry<DisplayGenericTextDialog>(
+                metadata = dialog()
+            ) { key ->
+                GenericTextDialog(title = key.title, text = key.text) {
+                    backStack.removeLastOrNull()
+                }
+            }
+        }
+    )
+}
+
+
+@Composable
+fun GameScreen(
+    modifier: Modifier = Modifier,
+    chessViewModel: ChessViewModel = hiltViewModel(),
+    onCreateNewRuleButtonClicked: () -> Unit,
+    onSelectRuleButtonClicked: () -> Unit,
+    onShowGenericDialog: (title: String, text: String) -> Unit
+) {
+    val appState = chessViewModel.appState.collectAsStateWithLifecycle()
 
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -122,42 +195,22 @@ fun ChessGameplayScreen(
                     chessViewModel.pausePlay()
                 },
                 onSelectRulesetClicked = {
-                    showSelectRuleset.value = true
+                    onSelectRuleButtonClicked()
                 },
                 onCreateRulesetClicked = {
-                    showCreateNewRuleset.value = true
+                    onCreateNewRuleButtonClicked()
                 },
                 selectedRuleset = appState.value.data.selectedRuleset
             )
         }
     }
-
-    if (showSelectRuleset.value) {
-        SelectRulesetDialog(
-            onDismiss = {
-                showSelectRuleset.value = false
-            }, onItemSelected = {
-                chessViewModel.setRuleset(it)
-            },
-            options = allRulesets.value,
-            initial = appState.value.data.selectedRuleset
-        )
-    }
-    if (showCreateNewRuleset.value) {
-        CreateRulesetDialog(onDismiss = {
-            showCreateNewRuleset.value = false
-        }, onApply = { name, baseMs, incrementMs ->
-            chessViewModel.createNewRuleset(name, baseMs, incrementMs)
-        })
-    }
     if (appState.value is ChessGameplayUiState.Finished) {
         val state = appState.value as ChessGameplayUiState.Finished
-        GenericTextDialog(
-            title = stringResource(R.string.general_message),
-            text = stringResource(R.string.chess_gameplay_winner_is, state.winner.name),
-            onDismiss = {
-                chessViewModel.resetPlay()
-            })
+        onShowGenericDialog(
+            stringResource(R.string.general_message),
+            stringResource(R.string.chess_gameplay_winner_is, state.winner.name)
+        )
+        chessViewModel.resetPlay()
     }
 
     val view = LocalView.current
