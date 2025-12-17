@@ -1,11 +1,14 @@
 package com.zsasko.chessclock.ui.dialogs
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import  com.zsasko.chessclock.R
 
 @Composable
@@ -17,7 +20,11 @@ fun GenericTextDialog(
     DialogWrapperView(
         title = title,
         content = {
-            Text(text = text, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(vertical = 20.dp)
+            )
         },
         leftButton = {
             TextButton(
