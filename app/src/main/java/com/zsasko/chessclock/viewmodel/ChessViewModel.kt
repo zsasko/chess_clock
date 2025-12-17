@@ -13,9 +13,6 @@ import javax.inject.Inject
 class ChessViewModel @Inject constructor(private val chessController: ChessController) :
     ViewModel() {
 
-    val firstPlayerTimeInSec = chessController.firstPlayerDisplayTime()
-    val secondPlayerTimeInSec = chessController.secondPlayerDisplayTime()
-    val ruleset = chessController.activeRuleset()
     val allRulesets = chessController.allRulesets()
     val appState = chessController.appState()
 

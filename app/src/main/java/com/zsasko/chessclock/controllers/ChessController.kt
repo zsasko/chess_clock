@@ -3,6 +3,7 @@ package com.zsasko.chessclock.controllers
 import com.zsasko.chessclock.model.ChessRuleset
 import com.zsasko.chessclock.model.Players
 import com.zsasko.chessclock.model.state.ChessGameplayUiState
+import com.zsasko.chessclock.model.state.withData
 import com.zsasko.chessclock.utils.DEFAULT_RULESETS
 import com.zsasko.chessclock.utils.TICK_INTERVAL_MS
 import kotlinx.coroutines.CoroutineDispatcher
@@ -11,37 +12,37 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-interface ChessController {
-    fun appState(): StateFlow<ChessGameplayUiState>
+interface ChessRulesets {
+    fun setRuleset(ruleset: ChessRuleset)
+    fun createNewRuleset(ruleset: ChessRuleset)
+    fun allRulesets(): StateFlow<List<ChessRuleset>>
+}
+
+interface ChessGameplay {
     suspend fun startPlay(currentPlayer: Players)
     fun stopMyStartOther(player: Players)
     fun stopPlay()
     fun pausePlay()
     fun resetPlay()
-    fun firstPlayerDisplayTime(): StateFlow<Long>
-    fun secondPlayerDisplayTime(): StateFlow<Long>
+}
 
-    fun setRuleset(ruleset: ChessRuleset)
-    fun createNewRuleset(ruleset: ChessRuleset)
-    fun activeRuleset(): StateFlow<ChessRuleset?>
-    fun allRulesets(): StateFlow<List<ChessRuleset>>
-
+interface ChessState {
+    fun appState(): StateFlow<ChessGameplayUiState>
     fun dispose()
 }
 
+interface ChessController: ChessState, ChessGameplay, ChessRulesets
+
 class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController {
-    private val _currentPlayer = MutableStateFlow<Players?>(null)
-    private val _firstPlayerTimeInSec = MutableStateFlow<Long>(0)
-    private val _secondPlayerTimeInSec = MutableStateFlow<Long>(0)
 
     private val _rulesets = MutableStateFlow(DEFAULT_RULESETS)
-    private val _currentRuleset = MutableStateFlow<ChessRuleset?>(null)
 
     private val _appState =
-        MutableStateFlow<ChessGameplayUiState>(ChessGameplayUiState.Initialized)
+        MutableStateFlow<ChessGameplayUiState>(ChessGameplayUiState.Initialized())
 
     private var ticker: Job? = null
 
@@ -50,7 +51,11 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
     }
 
     override fun setRuleset(ruleset: ChessRuleset) {
-        _currentRuleset.value = ruleset
+        _appState.update { state ->
+            state.withData {
+                it.copy(selectedRuleset = ruleset)
+            }
+        }
         resetClock(ruleset.maxPlayTimePerPlayerMs)
     }
 
@@ -59,18 +64,26 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
     }
 
     private fun resetClock(maxTime: Long) {
-        _firstPlayerTimeInSec.value = maxTime
-        _secondPlayerTimeInSec.value = maxTime
+        _appState.update { state ->
+            state.withData {
+                it.copy(firstPlayerDisplayTime = maxTime,
+                    secondPlayerDisplayTime = maxTime)
+            }
+        }
     }
 
     override suspend fun startPlay(currentPlayer: Players) {
         if (ticker?.isActive == true) {
             return
         }
-        if (_currentPlayer.value == null) {
-            _currentPlayer.value = currentPlayer
+        if (_appState.value.data.selectedPlayer == null) {
+            _appState.update { state ->
+                state.withData {
+                    it.copy(selectedPlayer = currentPlayer)
+                }
+            }
         }
-        _appState.value = ChessGameplayUiState.Running
+        _appState.value = ChessGameplayUiState.Running(_appState.value.data)
         startTicker()
     }
 
@@ -78,10 +91,20 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
         withContext(dispatcher) {
             ticker = launch {
                 while (_appState.value is ChessGameplayUiState.Running) {
-                    if (_currentPlayer.value == Players.FIRST) {
-                        _firstPlayerTimeInSec.value -= TICK_INTERVAL_MS
+                    if (_appState.value.data.selectedPlayer == Players.FIRST) {
+                        val newValue = _appState.value.data.firstPlayerDisplayTime - TICK_INTERVAL_MS
+                        _appState.update { state ->
+                            state.withData {
+                                it.copy(firstPlayerDisplayTime = newValue)
+                            }
+                        }
                     } else {
-                        _secondPlayerTimeInSec.value -= TICK_INTERVAL_MS
+                        val newValue = _appState.value.data.secondPlayerDisplayTime - TICK_INTERVAL_MS
+                        _appState.update { state ->
+                            state.withData {
+                                it.copy(secondPlayerDisplayTime = newValue)
+                            }
+                        }
                     }
                     delay(TICK_INTERVAL_MS)
                     calculateIfGameIsOver()
@@ -92,56 +115,54 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
 
     override fun stopMyStartOther(playerButtonClicked: Players) {
         if (_appState.value !is ChessGameplayUiState.Running) return
-        if (playerButtonClicked != _currentPlayer.value) return
         val opponent =
-            if (_currentPlayer.value == Players.FIRST) Players.SECOND else Players.FIRST
-        _currentPlayer.value = opponent
+            if (_appState.value.data.selectedPlayer == Players.FIRST) Players.SECOND else Players.FIRST
+        _appState.update { state ->
+            state.withData {
+                it.copy(selectedPlayer = opponent)
+            }
+        }
         applyIncrement()
     }
 
     fun applyIncrement() {
-        val increment = _currentRuleset.value?.timeIncrementAfterMoveIsMadeMs ?: 0
+        val increment = _appState.value.data.selectedRuleset?.timeIncrementAfterMoveIsMadeMs ?: 0
         if (increment <= 0) return
-        if (_currentPlayer.value == Players.SECOND) {
-            _firstPlayerTimeInSec.value += increment
-        } else {
-            _secondPlayerTimeInSec.value += increment
+        _appState.update { state ->
+            val secondPlayerActive = _appState.value.data.selectedPlayer == Players.SECOND
+            state.withData {
+                if (secondPlayerActive) {
+                    it.copy(firstPlayerDisplayTime = it.firstPlayerDisplayTime + increment)
+                } else {
+                    it.copy(secondPlayerDisplayTime = it.secondPlayerDisplayTime + increment)
+                }
+            }
         }
     }
 
     override fun stopPlay() {
         ticker?.cancel()
-        _appState.value = ChessGameplayUiState.Stopped
-        _currentRuleset.value?.let {
-            resetClock(it.maxPlayTimePerPlayerMs)
+        _appState.update {
+            ChessGameplayUiState.Stopped(it.data)
         }
+        resetClock(_appState.value.data.selectedRuleset?.maxPlayTimePerPlayerMs ?: 0L)
     }
 
     override fun pausePlay() {
-        _appState.value = ChessGameplayUiState.Paused
+        _appState.update {
+            ChessGameplayUiState.Paused(it.data)
+        }
         ticker?.cancel()
     }
 
     override fun resetPlay() {
         pausePlay()
-        val ruleset = _currentRuleset.value ?: _rulesets.value.first()
+        val ruleset = _appState.value.data.selectedRuleset ?: _rulesets.value.first()
         val maxTime = ruleset.maxPlayTimePerPlayerMs
-        _firstPlayerTimeInSec.value = maxTime
-        _secondPlayerTimeInSec.value = maxTime
-        _currentPlayer.value = null
-        _appState.value = ChessGameplayUiState.Initialized
-    }
-
-    override fun firstPlayerDisplayTime(): StateFlow<Long> {
-        return _firstPlayerTimeInSec.asStateFlow()
-    }
-
-    override fun secondPlayerDisplayTime(): StateFlow<Long> {
-        return _secondPlayerTimeInSec.asStateFlow()
-    }
-
-    override fun activeRuleset(): StateFlow<ChessRuleset?> {
-        return _currentRuleset.asStateFlow()
+        _appState.update {
+            ChessGameplayUiState.Initialized(it.data)
+        }
+        resetClock(maxTime)
     }
 
     override fun allRulesets(): StateFlow<List<ChessRuleset>> {
@@ -156,14 +177,18 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
         stopPlay()
     }
 
-    fun calculateIfGameIsOver() {
-        if (_firstPlayerTimeInSec.value <= 0) {
+     fun calculateIfGameIsOver() {
+        if (_appState.value.data.firstPlayerDisplayTime <= 0) {
             resetPlay()
-            _appState.value = ChessGameplayUiState.Finished(Players.SECOND)
+            _appState.update {
+                ChessGameplayUiState.Finished(it.data, Players.SECOND)
+            }
         }
-        if (_secondPlayerTimeInSec.value <= 0) {
+        if (_appState.value.data.secondPlayerDisplayTime <= 0) {
             resetPlay()
-            _appState.value = ChessGameplayUiState.Finished(Players.FIRST)
+            _appState.update {
+                ChessGameplayUiState.Finished(it.data, Players.FIRST)
+            }
         }
     }
 

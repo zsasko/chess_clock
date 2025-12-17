@@ -12,16 +12,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.zsasko.chessclock.R
+import com.zsasko.chessclock.model.Players
 import com.zsasko.chessclock.model.state.ChessGameplayUiState
+import com.zsasko.chessclock.model.state.GameplayData
+import com.zsasko.chessclock.utils.formatMillis
 
 @Composable
 fun Clock(
     appState: ChessGameplayUiState,
-    currentTime: String,
+    clockForPlayer: Players,
     onStopMyStartOtherClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isPlayActive = appState is ChessGameplayUiState.Running
+    val isPlayActive = appState is ChessGameplayUiState.Running && appState.data.selectedPlayer == clockForPlayer
+    val currentTime = if (clockForPlayer == Players.FIRST) appState.data.firstPlayerDisplayTime.formatMillis() else  appState.data.secondPlayerDisplayTime.formatMillis()
 
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -41,5 +45,5 @@ fun Clock(
 @Preview
 @Composable
 fun PreviewClock() {
-    Clock(ChessGameplayUiState.Running, "05:23", {}, Modifier)
+    Clock(ChessGameplayUiState.Paused(GameplayData()), Players.FIRST, {}, Modifier)
 }

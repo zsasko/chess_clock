@@ -38,17 +38,17 @@ class ChessControllerImplTest {
     @Test
     fun `initial state is initialized with first default ruleset`() {
         val state = controller.appState().value
-        val activeRuleset = controller.activeRuleset().value
+        val activeRuleset = state.data.selectedRuleset
 
         assertTrue(state is ChessGameplayUiState.Initialized)
         assertEquals(DEFAULT_RULESETS.first(), activeRuleset)
         assertEquals(
             DEFAULT_RULESETS.first().maxPlayTimePerPlayerMs,
-            controller.firstPlayerDisplayTime().value
+            state.data.firstPlayerDisplayTime
         )
         assertEquals(
             DEFAULT_RULESETS.first().maxPlayTimePerPlayerMs,
-            controller.secondPlayerDisplayTime().value
+            state.data.secondPlayerDisplayTime
         )
     }
 
@@ -60,9 +60,11 @@ class ChessControllerImplTest {
         advanceTimeBy(2000L)
 
         controller.resetPlay()
+        val uiState = controller.appState().value
 
-        assertEquals(ruleset.maxPlayTimePerPlayerMs, controller.firstPlayerDisplayTime().value)
-        assertEquals(ruleset.maxPlayTimePerPlayerMs, controller.secondPlayerDisplayTime().value)
+
+        assertEquals(ruleset.maxPlayTimePerPlayerMs, uiState.data.firstPlayerDisplayTime)
+        assertEquals(ruleset.maxPlayTimePerPlayerMs, uiState.data.secondPlayerDisplayTime)
         assertTrue(controller.appState().value is ChessGameplayUiState.Initialized)
     }
 

@@ -44,9 +44,6 @@ fun ChessGameplayScreen(
     modifier: Modifier = Modifier,
     chessViewModel: ChessViewModel = hiltViewModel()
 ) {
-    val firstPlayerTime = chessViewModel.firstPlayerTimeInSec.collectAsStateWithLifecycle()
-    val secondPlayerTime = chessViewModel.secondPlayerTimeInSec.collectAsStateWithLifecycle()
-    val ruleset = chessViewModel.ruleset.collectAsStateWithLifecycle()
     val allRulesets = chessViewModel.allRulesets.collectAsStateWithLifecycle()
     val appState = chessViewModel.appState.collectAsStateWithLifecycle()
 
@@ -79,7 +76,7 @@ fun ChessGameplayScreen(
                 ) {
                     Clock(
                         appState = appState.value,
-                        firstPlayerTime.value.formatMillis(),
+                        clockForPlayer = Players.FIRST,
                         onStopMyStartOtherClicked = {
                             chessViewModel.stopMyStartOther(Players.FIRST)
                         }
@@ -96,7 +93,7 @@ fun ChessGameplayScreen(
                 ) {
                     Clock(
                         appState = appState.value,
-                        secondPlayerTime.value.formatMillis(),
+                        clockForPlayer = Players.SECOND,
                         onStopMyStartOtherClicked = {
                             chessViewModel.stopMyStartOther(Players.SECOND)
                         }
@@ -131,7 +128,7 @@ fun ChessGameplayScreen(
                 onCreateRulesetClicked = {
                     showCreateNewRuleset.value = true
                 },
-                selectedRuleset = ruleset.value
+                selectedRuleset = appState.value.data.selectedRuleset
             )
         }
     }
@@ -144,7 +141,7 @@ fun ChessGameplayScreen(
                 chessViewModel.setRuleset(it)
             },
             options = allRulesets.value,
-            initial = ruleset.value
+            initial = appState.value.data.selectedRuleset
         )
     }
     if (showCreateNewRuleset.value) {
