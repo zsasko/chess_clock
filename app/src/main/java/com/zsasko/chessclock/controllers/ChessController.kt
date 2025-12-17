@@ -24,7 +24,7 @@ interface ChessRulesets {
 
 interface ChessGameplay {
     suspend fun startPlay(currentPlayer: Players)
-    fun stopMyStartOther(player: Players)
+    fun stopMyStartOther()
     fun stopPlay()
     fun pausePlay()
     fun resetPlay()
@@ -117,7 +117,7 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
         }
     }
 
-    override fun stopMyStartOther(playerButtonClicked: Players) {
+    override fun stopMyStartOther() {
         if (_appState.value !is ChessGameplayUiState.Running) return
         val opponent =
             if (_appState.value.data.selectedPlayer == Players.FIRST) Players.SECOND else Players.FIRST

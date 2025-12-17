@@ -77,7 +77,7 @@ fun ChessGameplayScreen(
                         appState = appState.value,
                         clockForPlayer = Players.FIRST,
                         onStopMyStartOtherClicked = {
-                            chessViewModel.stopMyStartOther(Players.FIRST)
+                            chessViewModel.stopMyStartOther()
                         }
                     )
                 }
@@ -94,7 +94,7 @@ fun ChessGameplayScreen(
                         appState = appState.value,
                         clockForPlayer = Players.SECOND,
                         onStopMyStartOtherClicked = {
-                            chessViewModel.stopMyStartOther(Players.SECOND)
+                            chessViewModel.stopMyStartOther()
                         }
                     )
                 }
