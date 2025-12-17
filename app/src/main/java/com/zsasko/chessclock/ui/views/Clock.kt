@@ -12,29 +12,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.zsasko.chessclock.R
-import com.zsasko.chessclock.model.Players
-import com.zsasko.chessclock.model.state.ChessGameplayUiState
-import com.zsasko.chessclock.model.state.GameplayData
 import java.util.Locale
 
 @Composable
 fun Clock(
-    appState: ChessGameplayUiState,
-    clockForPlayer: Players,
+    isPlayButtonActive: Boolean,
+    playerTime: Long,
     onStopMyStartOtherClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isPlayActive =
-        appState is ChessGameplayUiState.Running && appState.data.selectedPlayer == clockForPlayer
-    val currentTime =
-        if (clockForPlayer == Players.FIRST) appState.data.firstPlayerDisplayTime.formatMillis() else appState.data.secondPlayerDisplayTime.formatMillis()
-
+    val currentTime = playerTime.formatMillis()
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 currentTime, style = MaterialTheme.typography.headlineLarge
             )
-            Button(onStopMyStartOtherClicked, enabled = isPlayActive) {
+            Button(onStopMyStartOtherClicked, enabled = isPlayButtonActive) {
                 Text(
                     stringResource(R.string.chess_gameplay_stop_my_start_other),
                     style = MaterialTheme.typography.labelLarge
@@ -57,5 +50,5 @@ fun Long.formatMillis(): String {
 @Preview
 @Composable
 fun PreviewClock() {
-    Clock(ChessGameplayUiState.Paused(GameplayData()), Players.FIRST, {}, Modifier)
+    Clock(true, 0L, {}, Modifier)
 }

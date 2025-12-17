@@ -164,7 +164,7 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
         val ruleset = _appState.value.data.selectedRuleset ?: _rulesets.value.first()
         val maxTime = ruleset.maxPlayTimePerPlayerMs
         _appState.update {
-            ChessGameplayUiState.Initialized(it.data)
+            ChessGameplayUiState.Initialized(it.data.copy(selectedPlayer = null))
         }
         resetClock(maxTime)
     }
