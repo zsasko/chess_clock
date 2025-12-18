@@ -30,6 +30,10 @@ class ChessViewModel @Inject constructor(private val chessController: ChessContr
         .map { it.data.firstPlayerDisplayTime }
         .distinctUntilChanged()
 
+    val activeRuleset = appState
+        .map { it.data.selectedRuleset }
+        .distinctUntilChanged()
+
     fun startPlay(currentPlayer: Players = Players.FIRST) {
         viewModelScope.launch {
             chessController.startPlay(currentPlayer)
