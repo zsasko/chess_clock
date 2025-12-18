@@ -137,7 +137,10 @@ fun GameScreen(
         appState.value is ChessGameplayUiState.Running && selectedPlayer.value == Players.SECOND
 
     val configuration = LocalConfiguration.current
-    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+    val isPortrait = remember { configuration.orientation == Configuration.ORIENTATION_PORTRAIT }
+
+    val isPlayActive = appState.value is ChessGameplayUiState.Running
+    val isPlayPaused = appState.value is ChessGameplayUiState.Paused
 
     Box(
         modifier = modifier
@@ -200,7 +203,8 @@ fun GameScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ClockControls(
-                appState = appState.value,
+                isPlayActive = isPlayActive,
+                isPlayPaused = isPlayPaused,
                 onResetClicked = {
                     chessViewModel.resetPlay()
                 }, onStartClicked = {

@@ -14,15 +14,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.zsasko.chessclock.R
 import com.zsasko.chessclock.model.ChessRuleset
-import com.zsasko.chessclock.model.state.ChessGameplayUiState
-import com.zsasko.chessclock.model.state.GameplayData
 import com.zsasko.chessclock.utils.DEFAULT_RULESETS
 import com.zsasko.chessclock.utils.TEST_TAG_BUTTON_RESET
 import com.zsasko.chessclock.utils.TEST_TAG_BUTTON_START_PAUSE
 
 @Composable
 fun ClockControls(
-    appState: ChessGameplayUiState,
+    isPlayActive: Boolean,
+    isPlayPaused: Boolean,
     selectedRuleset: ChessRuleset?,
     onStartClicked: () -> Unit,
     onPauseClicked: () -> Unit,
@@ -31,9 +30,6 @@ fun ClockControls(
     onCreateRulesetClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isPlayActive = appState is ChessGameplayUiState.Running
-    val isPlayPaused = appState is ChessGameplayUiState.Paused
-
     Column(modifier = modifier) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(onClick = {
@@ -91,7 +87,8 @@ fun ClockControls(
 @Composable
 fun PreviewClockControls() {
     ClockControls(
-        ChessGameplayUiState.Paused(GameplayData()),
+        true,
+        false,
         DEFAULT_RULESETS.first(),
         {},
         {},
