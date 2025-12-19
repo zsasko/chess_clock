@@ -41,7 +41,6 @@ import com.zsasko.chessclock.ui.dialogs.SelectRulesetDialog
 import com.zsasko.chessclock.ui.theme.ChessClockTheme
 import com.zsasko.chessclock.ui.views.Clock
 import com.zsasko.chessclock.ui.views.ClockControls
-import com.zsasko.chessclock.utils.DEFAULT_RULESETS
 import com.zsasko.chessclock.viewmodel.ChessViewModel
 import kotlinx.serialization.Serializable
 
@@ -123,17 +122,14 @@ fun GameScreen(
 ) {
     val appState = chessViewModel.appState.collectAsStateWithLifecycle()
 
-    val selectedPlayer = chessViewModel.selectedPlayer
-        .collectAsStateWithLifecycle(initialValue = null)
+    val selectedPlayer = chessViewModel.selectedPlayer.collectAsStateWithLifecycle()
 
-    val secondPlayerTime = chessViewModel.secondPlayerTime
-        .collectAsStateWithLifecycle(initialValue = 0)
+    val secondPlayerTime = chessViewModel.secondPlayerTime.collectAsStateWithLifecycle()
 
-    val firstPlayerTime = chessViewModel.firstPlayerTime
-        .collectAsStateWithLifecycle(initialValue = 0)
+    val firstPlayerTime = chessViewModel.firstPlayerTime.collectAsStateWithLifecycle()
 
     val activeRuleset =
-        chessViewModel.activeRuleset.collectAsStateWithLifecycle(initialValue = DEFAULT_RULESETS[0])
+        chessViewModel.activeRuleset.collectAsStateWithLifecycle()
 
     val isPlayer1Active =
         appState.value is ChessGameplayUiState.Running && selectedPlayer.value == Players.FIRST
