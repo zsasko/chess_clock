@@ -1,5 +1,6 @@
 package com.zsasko.chessclock.ui.screens
 
+import android.app.Activity
 import android.content.res.Configuration
 import android.view.WindowManager
 import androidx.compose.foundation.background
@@ -33,14 +34,17 @@ import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.scene.DialogSceneStrategy.Companion.dialog
 import androidx.navigation3.ui.NavDisplay
 import com.zsasko.chessclock.R
+import com.zsasko.chessclock.model.ChessRuleset
 import com.zsasko.chessclock.model.Players
 import com.zsasko.chessclock.model.state.ChessGameplayUiState
+import com.zsasko.chessclock.model.state.GameplayData
 import com.zsasko.chessclock.ui.dialogs.CreateRulesetDialog
 import com.zsasko.chessclock.ui.dialogs.GenericTextDialog
 import com.zsasko.chessclock.ui.dialogs.SelectRulesetDialog
 import com.zsasko.chessclock.ui.theme.ChessClockTheme
 import com.zsasko.chessclock.ui.views.Clock
 import com.zsasko.chessclock.ui.views.ClockControls
+import com.zsasko.chessclock.utils.DEFAULT_RULESETS
 import com.zsasko.chessclock.viewmodel.ChessViewModel
 import kotlinx.serialization.Serializable
 
@@ -70,17 +74,13 @@ fun ChessGameplayScreen(
         onBack = { backStack.removeLastOrNull() },
         entryProvider = entryProvider {
             entry<GameScreen> {
-                GameScreen(
-                    onCreateNewRuleButtonClicked = {
-                        backStack.add(AddNewRulesetScreen)
-                    },
-                    onSelectRuleButtonClicked = {
-                        backStack.add(SelectRulesetScreen)
-                    },
-                    onShowGenericDialog = { title, text ->
-                        backStack.add(DisplayGenericTextDialog(title, text))
-                    }
-                )
+                GameScreen(onCreateNewRuleButtonClicked = {
+                    backStack.add(AddNewRulesetScreen)
+                }, onSelectRuleButtonClicked = {
+                    backStack.add(SelectRulesetScreen)
+                }, onShowGenericDialog = { title, text ->
+                    backStack.add(DisplayGenericTextDialog(title, text))
+                })
             }
             entry<SelectRulesetScreen>(
                 metadata = dialog()
@@ -107,8 +107,7 @@ fun ChessGameplayScreen(
                     backStack.removeLastOrNull()
                 }
             }
-        }
-    )
+        })
 }
 
 
@@ -128,23 +127,57 @@ fun GameScreen(
 
     val firstPlayerTime = chessViewModel.firstPlayerTime.collectAsStateWithLifecycle()
 
-    val activeRuleset =
-        chessViewModel.activeRuleset.collectAsStateWithLifecycle()
+    val activeRuleset = chessViewModel.activeRuleset.collectAsStateWithLifecycle()
+
+    GameScreenLayout(
+        appState = appState.value,
+        selectedPlayer = selectedPlayer.value,
+        firstPlayerTime = firstPlayerTime.value,
+        secondPlayerTime = secondPlayerTime.value,
+        activeRuleset = activeRuleset.value,
+        onCreateNewRuleButtonClicked = onCreateNewRuleButtonClicked,
+        onSelectRuleButtonClicked = onSelectRuleButtonClicked,
+        onShowGenericDialog = onShowGenericDialog,
+        onStopMyStartOtherClicked = { chessViewModel.stopMyStartOther() },
+        onStartClicked = { chessViewModel.startPlay() },
+        onPauseClicked = { chessViewModel.pausePlay() },
+        onResetClicked = { chessViewModel.resetPlay() },
+        onPlayFinished = { chessViewModel.resetPlay() },
+        modifier = modifier
+    )
+}
+
+@Composable
+fun GameScreenLayout(
+    appState: ChessGameplayUiState,
+    selectedPlayer: Players?,
+    firstPlayerTime: Long,
+    secondPlayerTime: Long,
+    activeRuleset: ChessRuleset?,
+    onCreateNewRuleButtonClicked: () -> Unit,
+    onSelectRuleButtonClicked: () -> Unit,
+    onShowGenericDialog: (title: String, text: String) -> Unit,
+    onStopMyStartOtherClicked: () -> Unit,
+    onStartClicked: () -> Unit,
+    onPauseClicked: () -> Unit,
+    onResetClicked: () -> Unit,
+    onPlayFinished: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
 
     val isPlayer1Active =
-        appState.value is ChessGameplayUiState.Running && selectedPlayer.value == Players.FIRST
+        appState is ChessGameplayUiState.Running && selectedPlayer == Players.FIRST
     val isPlayer2Active =
-        appState.value is ChessGameplayUiState.Running && selectedPlayer.value == Players.SECOND
+        appState is ChessGameplayUiState.Running && selectedPlayer == Players.SECOND
 
     val configuration = LocalConfiguration.current
     val isPortrait = remember { configuration.orientation == Configuration.ORIENTATION_PORTRAIT }
 
-    val isPlayActive = appState.value is ChessGameplayUiState.Running
-    val isPlayPaused = appState.value is ChessGameplayUiState.Paused
+    val isPlayActive = appState is ChessGameplayUiState.Running
+    val isPlayPaused = appState is ChessGameplayUiState.Paused
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) {
         LazyVerticalGrid(
             columns = if (isPortrait) {
@@ -165,11 +198,10 @@ fun GameScreen(
                 ) {
                     Clock(
                         isPlayButtonActive = isPlayer1Active,
-                        playerTime = firstPlayerTime.value,
+                        playerTime = firstPlayerTime,
                         onStopMyStartOtherClicked = {
-                            chessViewModel.stopMyStartOther()
-                        }
-                    )
+                            onStopMyStartOtherClicked()
+                        })
                 }
             }
             // Player 2
@@ -182,11 +214,10 @@ fun GameScreen(
                 ) {
                     Clock(
                         isPlayButtonActive = isPlayer2Active,
-                        playerTime = secondPlayerTime.value,
+                        playerTime = secondPlayerTime,
                         onStopMyStartOtherClicked = {
-                            chessViewModel.stopMyStartOther()
-                        }
-                    )
+                            onStopMyStartOtherClicked()
+                        })
                 }
             }
         }
@@ -194,9 +225,7 @@ fun GameScreen(
             modifier = Modifier
                 .align(if (isPortrait) Alignment.Center else Alignment.TopCenter)
                 .border(
-                    width = 1.dp,
-                    color = Color.Gray,
-                    shape = RectangleShape
+                    width = 1.dp, color = Color.Gray, shape = RectangleShape
                 )
                 .background(Color.LightGray)
                 .padding(16.dp),
@@ -206,11 +235,13 @@ fun GameScreen(
                 isPlayActive = isPlayActive,
                 isPlayPaused = isPlayPaused,
                 onResetClicked = {
-                    chessViewModel.resetPlay()
-                }, onStartClicked = {
-                    chessViewModel.startPlay()
-                }, onPauseClicked = {
-                    chessViewModel.pausePlay()
+                    onResetClicked()
+                },
+                onStartClicked = {
+                    onStartClicked()
+                },
+                onPauseClicked = {
+                    onPauseClicked()
                 },
                 onSelectRulesetClicked = {
                     onSelectRuleButtonClicked()
@@ -218,22 +249,21 @@ fun GameScreen(
                 onCreateRulesetClicked = {
                     onCreateNewRuleButtonClicked()
                 },
-                selectedRuleset = activeRuleset.value
+                selectedRuleset = activeRuleset
             )
         }
     }
-    if (appState.value is ChessGameplayUiState.Finished) {
-        val state = appState.value as ChessGameplayUiState.Finished
+    if (appState is ChessGameplayUiState.Finished) {
         onShowGenericDialog(
             stringResource(R.string.general_message),
-            stringResource(R.string.chess_gameplay_winner_is, state.winner.name)
+            stringResource(R.string.chess_gameplay_winner_is, appState.winner.name)
         )
-        chessViewModel.resetPlay()
+        onPlayFinished()
     }
 
     val view = LocalView.current
     DisposableEffect(view) {
-        val window = (view.context as? android.app.Activity)?.window
+        val window = (view.context as? Activity)?.window
         window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         onDispose {
             window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -245,6 +275,20 @@ fun GameScreen(
 @Composable
 fun ChessGameplayScreenPreview() {
     ChessClockTheme {
-        ChessGameplayScreen()
+        GameScreenLayout(
+            appState = ChessGameplayUiState.Paused(GameplayData()),
+            selectedPlayer = Players.FIRST,
+            firstPlayerTime = 1000L,
+            secondPlayerTime = 1000L,
+            activeRuleset = DEFAULT_RULESETS[0],
+            onCreateNewRuleButtonClicked = {},
+            onSelectRuleButtonClicked = {},
+            onShowGenericDialog = { title, text -> },
+            onStopMyStartOtherClicked = {},
+            onStartClicked = {},
+            onPauseClicked = {},
+            onResetClicked = {},
+            onPlayFinished = {},
+        )
     }
 }
