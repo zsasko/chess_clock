@@ -1,8 +1,9 @@
 package com.zsasko.chessclock.utils
 
 import com.zsasko.chessclock.model.ChessRuleset
+import kotlinx.collections.immutable.persistentListOf
 
-val DEFAULT_RULESETS = listOf(
+val DEFAULT_RULESETS = persistentListOf(
     ChessRuleset(
         "Blitz (5+0)",
         maxPlayTimePerPlayerMs = 5 * 60_000L,

@@ -60,7 +60,7 @@ class ChessControllerImpl(val dispatcher: CoroutineDispatcher) : ChessController
     }
 
     override fun createNewRuleset(ruleset: ChessRuleset) {
-        _rulesets.value += ruleset
+        _rulesets.update { it.add(ruleset) }
     }
 
     private fun resetClock(maxTime: Long) {
